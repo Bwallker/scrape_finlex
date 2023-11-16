@@ -1,0 +1,28 @@
+[tool.poetry]
+name = "scrape-finlex"
+version = "0.1.0"
+description = ""
+authors = ["bwallker <benbwall@gmail.com>"]
+readme = "README.md"
+packages = [{ include = "scrape_finlex" }]
+
+[tool.poetry.scripts]
+main = "scrape_finlex:main"
+
+[tool.poetry.dependencies]
+python = "3.12"
+bs4 = "^0.0.1"
+requests = "^2.31.0"
+
+[tool.poetry.group.dev.dependencies]
+black = "^23.11.0"
+flake8 = "^6.1.0"
+
+[tool.pyright]
+venvPath = "C:\\Users\\benbw\\AppData\\Local\\pypoetry\\Cache\\virtualenvs"
+venv = "scrape-finlex-iKoFM_Us-py3.12"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
