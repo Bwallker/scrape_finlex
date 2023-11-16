@@ -1,5 +1,0 @@
-dist
-.vscode
-*.html
-poetry.lock
-.env

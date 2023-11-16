@@ -1,7 +1,10 @@
 """"The main module in scrape-finlex."""
 
-from bs4 import BeautifulSoup
+from typing import Any, Iterable
+from bs4 import BeautifulSoup, NavigableString, PageElement, Tag
 from requests import get, Response
+from dataclasses import dataclass
+from itertools import batched, chain
 
 
 def get_page(offset: int) -> Response:
@@ -13,16 +16,106 @@ def get_page(offset: int) -> Response:
     )
 
 
-def main() -> None:
-    """Main function."""
-    print("Running main!")
-    res = get_page(0)
-    soup = BeautifulSoup(res.text, features="html.parser")
+@dataclass
+class DocumentEntry:
+    """Class representing a document entry."""
+
+    description: str
+    date: str
+    link: str
+
+
+def process(x: tuple[str | PageElement, ...]) -> DocumentEntry | None:
+    """Process a document entry."""
+    if len(x) != 2:
+        raise ValueError("x must be a tuple of length 2.")
+    doc, desc = x
+    if not isinstance(desc, Tag):
+        raise TypeError("desc must be a Tag.")
+    if not isinstance(doc, Tag):
+        raise TypeError("doc must be a Tag.")
+    # print("Desc and doc are tags!")
+    # print(f"Desc: {desc}, doc: {doc}")
+
+    doc_link = doc.find("a")
+    desc_link = desc.find("a")
+    # print("Doc link:", doc_link)
+    # print("Desc link:", desc_link)
+    if not isinstance(doc_link, Tag):
+        raise TypeError("doc_link must be a Tag.")
+    if not isinstance(desc_link, Tag):
+        raise TypeError("desc_link must be a Tag.")
+    # print("Doc link and desc link are tags!")
+    doc_link_href = doc_link.get("href")
+    desc_link_href = desc_link.get("href")
+
+    # print("Doc link href:", doc_link_href)
+    # print("Desc link href:", desc_link_href)
+    if doc_link_href != desc_link_href:
+        raise ValueError("doc_link_href and desc_link_href must be equal.")
+
+    if not isinstance(doc_link_href, str):
+        raise TypeError("doc_link_href must be a string.")
+    if not isinstance(desc_link_href, str):
+        raise TypeError("desc_link_href must be a string.")
+
+    doc_contents = doc_link.contents
+    desc_contents = desc_link.contents
+
+    if len(doc_contents) != 1:
+        raise ValueError("doc_contents must be of length 1.")
+    if len(desc_contents) != 1:
+        raise ValueError("desc_contents must be of length 1.")
+
+    doc_content = doc_contents[0]
+    desc_content = desc_contents[0]
+
+    # print("Doc content:", doc_content)
+    # print("Desc content:", desc_content)
+    date = doc_content.get_text()
+    description = desc_content.get_text()
+
+    link = f"https://www.finlex.fi{doc_link_href}"
+
+    return DocumentEntry(date=date, description=description, link=link)
+
+
+"""
+    return DocumentEntry(
+        x.find(class_="docTitle").text,
+        x.find(class_="docTitle").find("a").get("href"),
+    )
+"""
+
+
+def parse_page(soup: BeautifulSoup) -> Iterable[DocumentEntry]:
     documents = soup.find(class_="docList")
     if documents is None:
         raise ValueError("Could not find documents.")
-    for x in documents:
-        print("Element in documents:", x)
+    entries = filter(
+        None,
+        map(process, batched(filter(lambda x: isinstance(x, Tag), documents), 2)),
+    )
+    return entries
 
-    with open("output.html", "w") as f:
-        f.write(soup.prettify())
+
+def main() -> None:
+    """Main function."""
+    print("Running main!")
+
+    result: Iterable[DocumentEntry] = iter([])
+
+    for i in range(0, 800, 20):
+        print("Running pass number", i)
+        res = get_page(i)
+        soup = BeautifulSoup(res.text, features="html.parser")
+        entries = parse_page(soup)
+        result = chain(result, entries)
+
+        print("Finished running pass number", i)
+    with open("output.csv", "wb") as f:
+        f.write(b"date,description,link\n")
+        for entry in result:
+            f.write(
+                bytes(f'"{entry.date}","{entry.description}","{entry.link}"\n', "utf-8")
+            )
