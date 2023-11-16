@@ -2,3 +2,5 @@ poetry.lock
 dist
 .env
 .vscode
+output.xlsx
+~$output.xlsx
