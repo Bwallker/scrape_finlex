@@ -1,4 +1,4 @@
-# Python program for scraping data from Finlex.fi
+# Python program for scraping data from **[Finlex](https://www.finlex.fi/en/)**
 
 ## Installing
 ### Requirements
