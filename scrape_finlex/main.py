@@ -1,7 +1,7 @@
 """"The main module in scrape-finlex."""
 
 from typing import Any, Iterable
-from bs4 import BeautifulSoup, NavigableString, PageElement, Tag
+from bs4 import BeautifulSoup, PageElement, Tag
 from requests import get, Response
 from dataclasses import dataclass
 from itertools import batched, chain
@@ -25,7 +25,7 @@ class DocumentEntry:
     link: str
 
 
-def process(x: tuple[str | PageElement, ...]) -> DocumentEntry | None:
+def process(x: tuple[str | PageElement, ...]) -> DocumentEntry:
     """Process a document entry."""
     if len(x) != 2:
         raise ValueError("x must be a tuple of length 2.")
