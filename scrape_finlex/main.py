@@ -5,6 +5,7 @@ from bs4 import BeautifulSoup, PageElement, Tag
 from requests import get, Response
 from dataclasses import dataclass
 from itertools import batched, chain
+from multiprocessing import Pool
 
 
 def get_page(offset: int) -> Response:
@@ -84,23 +85,30 @@ def parse_page(soup: BeautifulSoup) -> Iterable[DocumentEntry]:
     return entries
 
 
+def pass_(offset: int) -> list[DocumentEntry]:
+    """Run a pass."""
+    print("Running pass number", offset)
+    res = get_page(offset)
+    soup = BeautifulSoup(res.text, features="html.parser")
+    entries = list(parse_page(soup))
+    print("Finished running pass number", offset)
+    return entries
+
+
 def main() -> None:
     """Main function."""
     print("Running main!")
 
-    result: Iterable[DocumentEntry] = iter([])
+    result: list[DocumentEntry] = []
 
-    for i in range(0, 800, 20):
-        print("Running pass number", i)
-        res = get_page(i)
-        soup = BeautifulSoup(res.text, features="html.parser")
-        entries = parse_page(soup)
-        result = chain(result, entries)
+    with Pool(40) as p:
+        res = p.map(pass_, range(0, 800, 20))
+        result.extend(i for y in res for i in y)
 
-        print("Finished running pass number", i)
     with open("output.csv", "wb") as f:
         f.write(b"name,description,link\n")
         for entry in result:
             f.write(
                 bytes(f'"{entry.name}","{entry.description}","{entry.link}"\n', "utf-8")
             )
+    print("Finished running main!")
