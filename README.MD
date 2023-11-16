@@ -12,5 +12,5 @@
 
 ## Usage
 ### Running
-1. Run `poetry run python main.py`
+1. Run `poetry run main`
 
