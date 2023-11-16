@@ -21,7 +21,7 @@ class DocumentEntry:
     """Class representing a document entry."""
 
     description: str
-    date: str
+    name: str
     link: str
 
 
@@ -34,23 +34,18 @@ def process(x: tuple[str | PageElement, ...]) -> DocumentEntry | None:
         raise TypeError("desc must be a Tag.")
     if not isinstance(doc, Tag):
         raise TypeError("doc must be a Tag.")
-    # print("Desc and doc are tags!")
-    # print(f"Desc: {desc}, doc: {doc}")
 
     doc_link = doc.find("a")
     desc_link = desc.find("a")
-    # print("Doc link:", doc_link)
-    # print("Desc link:", desc_link)
+
     if not isinstance(doc_link, Tag):
         raise TypeError("doc_link must be a Tag.")
     if not isinstance(desc_link, Tag):
         raise TypeError("desc_link must be a Tag.")
-    # print("Doc link and desc link are tags!")
+
     doc_link_href = doc_link.get("href")
     desc_link_href = desc_link.get("href")
 
-    # print("Doc link href:", doc_link_href)
-    # print("Desc link href:", desc_link_href)
     if doc_link_href != desc_link_href:
         raise ValueError("doc_link_href and desc_link_href must be equal.")
 
@@ -70,22 +65,12 @@ def process(x: tuple[str | PageElement, ...]) -> DocumentEntry | None:
     doc_content = doc_contents[0]
     desc_content = desc_contents[0]
 
-    # print("Doc content:", doc_content)
-    # print("Desc content:", desc_content)
-    date = doc_content.get_text()
+    name = doc_content.get_text()
     description = desc_content.get_text()
 
     link = f"https://www.finlex.fi{doc_link_href}"
 
-    return DocumentEntry(date=date, description=description, link=link)
-
-
-"""
-    return DocumentEntry(
-        x.find(class_="docTitle").text,
-        x.find(class_="docTitle").find("a").get("href"),
-    )
-"""
+    return DocumentEntry(name=name, description=description, link=link)
 
 
 def parse_page(soup: BeautifulSoup) -> Iterable[DocumentEntry]:
@@ -114,8 +99,8 @@ def main() -> None:
 
         print("Finished running pass number", i)
     with open("output.csv", "wb") as f:
-        f.write(b"date,description,link\n")
+        f.write(b"name,description,link\n")
         for entry in result:
             f.write(
-                bytes(f'"{entry.date}","{entry.description}","{entry.link}"\n', "utf-8")
+                bytes(f'"{entry.name}","{entry.description}","{entry.link}"\n', "utf-8")
             )
