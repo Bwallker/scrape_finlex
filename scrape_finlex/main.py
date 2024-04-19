@@ -33,7 +33,8 @@ def parse_config() -> Config:
         raise ValueError("LINK environment variable must be set.")
     output_file_name = getenv("OUTPUT_FILE_NAME")
     if output_file_name is None:
-        raise ValueError("OUTPUT_FILE_NAME environment variable must be set.")
+        print("OUTPUT_FILE_NAME not specified in .env file. Defaulting to output.csv.")
+        output_file_name = "output.csv"
     return Config(link, output_file_name)
 
 
