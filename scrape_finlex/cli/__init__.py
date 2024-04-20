@@ -130,7 +130,7 @@ def get_num_pages(link: str) -> int:
     """Get the number of pages."""
     res = get_page(0, link)
     soup = BeautifulSoup(res.text, features="html.parser")
-    #print("Soup:", soup.prettify(), file=stderr)
+    print("Soup:", soup.prettify(), file=stderr)
     super_div = soup.find(class_="result-text")
     if super_div is None:
         raise ValueError("Could not find number of results.")
