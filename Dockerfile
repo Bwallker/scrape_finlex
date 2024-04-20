@@ -17,7 +17,7 @@ ADD README.md README.md
 ADD scrape_finlex scrape_finlex
 
 RUN poetry install --without dev --no-root
-RUN poetry run playwright install
+RUN poetry run playwright install && poetry run playwright install-deps
 
 ENV VIRTUAL_ENV=/.venv \
     PATH="/.venv/bin:$PATH"
