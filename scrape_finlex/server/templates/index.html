@@ -30,7 +30,10 @@
     <main>
       <div class="container text-center">
         <h1 class="mx-3 text-primary">Scrape Finlex</h1>
-        <form class="d-flex flex-column text-center m-auto w-auto h-auto">
+        <form
+          class="d-flex flex-column text-center m-auto w-auto h-auto"
+          id="scrape-form"
+        >
           <input
             type="url"
             id="url"
@@ -51,8 +54,6 @@
             id="scrape"
             class="btn btn-primary"
             value="Scrape"
-            formaction="api/scrape"
-            readonly
           />
         </form>
       </div>

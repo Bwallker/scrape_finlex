@@ -1,7 +1,10 @@
 from os import environ
 from flask import Flask
+from flask_cors import CORS
 
 app = Flask(__name__)
+cors = CORS(app)
+app.config["CORS_HEADERS"] = "Content-Type"
 
 from . import views
 from .. import Config, do_scrape
