@@ -1,5 +1,6 @@
 """"The main module in scrape-finlex."""
 
+from io import BufferedIOBase, BufferedWriter, RawIOBase
 from typing import Iterable
 from bs4 import BeautifulSoup, PageElement, Tag
 from requests import get, Response
@@ -7,7 +8,7 @@ from dataclasses import dataclass
 from itertools import batched
 from multiprocessing import Pool
 from dotenv import load_dotenv
-from os import getenv
+from os import PathLike, getenv
 
 
 def get_page(offset: int, link: str) -> Response:
@@ -22,7 +23,8 @@ class Config:
     """Configuration class representing configuration read from dotenv file."""
 
     link: str
-    output_file_name: str
+    output_file: BufferedIOBase
+    print_to_console: bool
 
 
 def parse_config() -> Config:
@@ -35,7 +37,8 @@ def parse_config() -> Config:
     if output_file_name is None:
         print("OUTPUT_FILE_NAME not specified in .env file. Defaulting to output.csv.")
         output_file_name = "output.csv"
-    return Config(link, output_file_name)
+    output_file = open(output_file_name, "wb")
+    return Config(link, output_file, True)
 
 
 @dataclass
@@ -106,13 +109,15 @@ def parse_page(soup: BeautifulSoup) -> Iterable[DocumentEntry]:
     return entries
 
 
-def pass_(offset: int, link: str) -> list[DocumentEntry]:
+def pass_(offset: int, config: Config) -> list[DocumentEntry]:
     """Run a pass."""
-    print("Running pass number", offset)
-    res = get_page(offset, link)
+    if config.print_to_console:
+        print("Running pass number", offset)
+    res = get_page(offset, config.link)
     soup = BeautifulSoup(res.text, features="html.parser")
     entries = list(parse_page(soup))
-    print("Finished running pass number", offset)
+    if config.print_to_console:
+        print("Finished running pass number", offset)
     return entries
 
 
@@ -147,12 +152,7 @@ def calc_upper_limit(num_pages: int) -> int:
     return num_pages + 20 - num_pages % 20
 
 
-def main() -> None:
-    """Main function."""
-    print("Running main!")
-
-    config = parse_config()
-
+def do_scrape(config: Config) -> None:
     num_pages = get_num_pages(config.link)
 
     upper_limit = calc_upper_limit(num_pages)
@@ -160,15 +160,24 @@ def main() -> None:
     result: list[DocumentEntry] = []
 
     with Pool(upper_limit // 20) as p:
-        res = p.starmap(
-            pass_, map(lambda x: (x, config.link), range(0, upper_limit, 20))
-        )
+        res = p.starmap(pass_, map(lambda x: (x, config), range(0, upper_limit, 20)))
         result.extend(i for y in res for i in y)
 
-    with open(config.output_file_name, "wb") as f:
-        f.write(b"name,description,link\n")
-        for entry in result:
-            f.write(
-                bytes(f'"{entry.name}","{entry.description}","{entry.link}"\n', "utf-8")
-            )
+    config.output_file.write(b"name,description,link\n")
+    for entry in result:
+        config.output_file.write(
+            bytes(f'"{entry.name}","{entry.description}","{entry.link}"\n', "utf-8")
+        )
+
+
+def cli_main() -> None:
+    """Main function."""
+    print("Running main!")
+
+    config = parse_config()
+    try:
+        do_scrape(config)
+    finally:
+        config.output_file.close()
+
     print("Finished running main!")
