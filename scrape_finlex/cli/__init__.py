@@ -1,26 +1,28 @@
 """"The main module in scrape-finlex."""
 
-from dataclasses import dataclass
 from io import BufferedIOBase
-from itertools import batched
-from multiprocessing import Pool
-from os import getenv
 from sys import stderr
 from typing import Iterable
-
 from bs4 import BeautifulSoup, PageElement, Tag
+from requests import Response, Session
+from dataclasses import dataclass
+from itertools import batched
+from multiprocessing import Pool
 from dotenv import load_dotenv
-from selenium.webdriver import Chrome
+from os import getenv
 
 
-def get_page(offset: int, link: str):
+def get_page(offset: int, link: str) -> Response:
     """Get a page from Finlex."""
     if offset < 0 or offset > 1090:
         raise ValueError("Offset must be between 0 and 1090.")
-    target = f"{link}&_offset={offset}"
-    driver = Chrome()
-    driver.get(target)
-    return driver.page_source
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3",
+        "Accept-Language": "en-US,en;q=0.9",
+        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
+    }
+    session = Session()
+    return session.get(f"{link}&_offset={offset}", headers=headers)
 
 
 @dataclass
@@ -119,7 +121,7 @@ def pass_(offset: int, config: Config) -> list[DocumentEntry]:
     if config.print_to_console:
         print("Running pass number", offset)
     res = get_page(offset, config.link)
-    soup = BeautifulSoup(res, features="html.parser")
+    soup = BeautifulSoup(res.text, features="html.parser")
     entries = list(parse_page(soup))
     if config.print_to_console:
         print("Finished running pass number", offset)
@@ -129,8 +131,8 @@ def pass_(offset: int, config: Config) -> list[DocumentEntry]:
 def get_num_pages(link: str) -> int:
     """Get the number of pages."""
     res = get_page(0, link)
-    soup = BeautifulSoup(res, features="html.parser")
-    #print("Soup:", soup.prettify(), file=stderr)
+    soup = BeautifulSoup(res.text, features="html.parser")
+    print("Soup:", soup.prettify(), file=stderr)
     super_div = soup.find(class_="result-text")
     if super_div is None:
         raise ValueError("Could not find number of results.")
