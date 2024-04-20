@@ -20,15 +20,10 @@ def get_page(offset: int, link: str) -> Response:
         raise ValueError("Offset must be between 0 and 1090.")
     target = f"{link}&_offset={offset}"
 
-    headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
-        "Accept-Language": "en-US,en;q=0.9",
-        "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
-    }
     scraper = create_scraper(
         browser={"browser": "chrome", "platform": "windows", "mobile": False}
     )
-    return scraper.get(target, headers=headers)
+    return scraper.get(target)
 
 
 @dataclass
