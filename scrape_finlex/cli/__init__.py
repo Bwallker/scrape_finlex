@@ -22,7 +22,12 @@ def get_page(offset: int, link: str) -> Response:
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
     }
     session = Session()
-    return session.get(f"{link}&_offset={offset}", headers=headers)
+    target = f"{link}&_offset={offset}"
+    response = session.get(target, headers=headers)
+    if response.status_code != 200:
+        print("Failed to get page:", response, file=stderr)
+        response = session.get(target, headers=headers)
+    return response
 
 
 @dataclass

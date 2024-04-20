@@ -19,7 +19,7 @@ def scrape() -> Response | tuple[str, int]:
     url = request.form.get("url")
     if url is None:
         return "No URL provided.", 400
-    #print("URL:", url, file=stderr)
+    print("URL:", url, file=stderr)
     output_file_name = request.form.get("output-file-name")
     if output_file_name is None or output_file_name == "":
         output_file_name = "output.csv"
@@ -32,5 +32,5 @@ def scrape() -> Response | tuple[str, int]:
         output_file, as_attachment=True, download_name=output_file_name
     )
     response.headers.set("Content-Type", "text/csv")
-    #print("Returning response:", response)
+    print("Returning response:", response)
     return response
