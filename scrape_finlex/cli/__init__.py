@@ -10,29 +10,17 @@ from typing import Iterable
 
 from bs4 import BeautifulSoup, PageElement, Tag
 from dotenv import load_dotenv
-from requests import Response, Session, get
-from selenium.webdriver import Chrome
-from selenium.webdriver.chrome.options import Options
-from selenium.webdriver.chrome.service import Service as ChromeService
-from webdriver_manager.chrome import ChromeDriverManager
-
-webdriver_location = ChromeDriverManager().install()
-
+from requests import Response, get
 
 def get_page(offset: int, link: str) -> Response:
     """Get a page from Finlex."""
     if offset < 0 or offset > 1090:
         raise ValueError("Offset must be between 0 and 1090.")
-    chrome_options = Options()
-    chrome_options.add_argument("--headless")  # type: ignore
-    chrome_options.add_argument("--disable-dev-shm-usage")  # type: ignore
-    chrome_options.add_argument("--no-sandbox")  # type: ignore
-    driver = Chrome(service=ChromeService(webdriver_location), options=chrome_options)
     target = f"{link}&_offset={offset}"
-    driver.get(target)
+
     headers = {
-        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3",
-        "Accept-Language": "fi-FI,en-US,en;q=0.9",
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/124.0.0.0 Safari/537.36",
+        "Accept-Language": "en-US,en;q=0.9",
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
     }
 
