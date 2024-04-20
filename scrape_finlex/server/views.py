@@ -1,20 +1,15 @@
 from io import BytesIO
 from sys import stderr
-from typing import Any
 from . import app
 from ..cli import Config, do_scrape
 from flask import render_template, request, send_file, Response
-from flask_cors import cross_origin
-
 
 @app.route("/", methods=["GET"])
-@cross_origin()
 def index():
     return render_template("index.html")
 
 
 @app.route("/api/scrape", methods=["POST"])
-@cross_origin()
 def scrape() -> Response | tuple[str, int]:
     url = request.form.get("url")
     if url is None:

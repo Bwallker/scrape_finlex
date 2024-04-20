@@ -4,30 +4,32 @@ from io import BufferedIOBase
 from sys import stderr
 from typing import Iterable
 from bs4 import BeautifulSoup, PageElement, Tag
-from requests import Response, Session
+from requests import Response, Session, get
 from dataclasses import dataclass
 from itertools import batched
 from multiprocessing import Pool
 from dotenv import load_dotenv
 from os import getenv
+from selenium.webdriver import Chrome
+from selenium.webdriver.chrome.options import Options
 
 
 def get_page(offset: int, link: str) -> Response:
     """Get a page from Finlex."""
     if offset < 0 or offset > 1090:
         raise ValueError("Offset must be between 0 and 1090.")
+    chrome_options = Options()
+    chrome_options.add_argument("--headless")  # type: ignore
+    driver = Chrome(options=chrome_options)
+    target = f"{link}&_offset={offset}"
+    driver.get(target)
     headers = {
         "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3",
         "Accept-Language": "en-US,en;q=0.9",
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
     }
-    session = Session()
-    target = f"{link}&_offset={offset}"
-    response = session.get(target, headers=headers)
-    if response.status_code != 200:
-        print("Failed to get page:", response, file=stderr)
-        response = session.get(target, headers=headers)
-    return response
+
+    return get(target, headers=headers)
 
 
 @dataclass
