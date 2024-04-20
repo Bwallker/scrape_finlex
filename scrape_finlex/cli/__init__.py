@@ -1,17 +1,22 @@
 """"The main module in scrape-finlex."""
 
-from io import BufferedIOBase
-from sys import stderr
-from typing import Iterable
-from bs4 import BeautifulSoup, PageElement, Tag
-from requests import Response, Session, get
 from dataclasses import dataclass
+from io import BufferedIOBase
 from itertools import batched
 from multiprocessing import Pool
-from dotenv import load_dotenv
 from os import getenv
+from sys import stderr
+from typing import Iterable
+
+from bs4 import BeautifulSoup, PageElement, Tag
+from dotenv import load_dotenv
+from requests import Response, Session, get
 from selenium.webdriver import Chrome
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.chrome.service import Service as ChromeService
+from webdriver_manager.chrome import ChromeDriverManager
+
+webdriver_location = ChromeDriverManager().install()
 
 
 def get_page(offset: int, link: str) -> Response:
@@ -20,7 +25,9 @@ def get_page(offset: int, link: str) -> Response:
         raise ValueError("Offset must be between 0 and 1090.")
     chrome_options = Options()
     chrome_options.add_argument("--headless")  # type: ignore
-    driver = Chrome(options=chrome_options)
+    chrome_options.add_argument("--disable-dev-shm-usage")  # type: ignore
+    chrome_options.add_argument("--no-sandbox")  # type: ignore
+    driver = Chrome(service=ChromeService(webdriver_location), options=chrome_options)
     target = f"{link}&_offset={offset}"
     driver.get(target)
     headers = {
