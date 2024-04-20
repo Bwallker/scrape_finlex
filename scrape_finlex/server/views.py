@@ -29,9 +29,6 @@ def scrape() -> Response | tuple[str, int]:
     response = send_file(
         output_file, as_attachment=True, download_name=output_file_name
     )
-    response.headers.add("Access-Control-Allow-Origin", "*")
-    response.headers.add("Access-Control-Allow-Headers", "*")
-    response.headers.add("Access-Control-Allow-Methods", "*")
     response.headers.set("Content-Type", "text/csv")
     print("Returning response:", response)
     return response
