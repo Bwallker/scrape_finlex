@@ -11,7 +11,7 @@ cli = "scrape_finlex:cli_main"
 server = "scrape_finlex:server_main"
 
 [tool.poetry.dependencies]
-python = "3.12"
+python = "3.11"
 bs4 = "^0.0.1"
 requests = "^2.31.0"
 python-dotenv = "^1.0.1"
