@@ -1,6 +1,7 @@
 """"The main module in scrape-finlex."""
 
 from io import BufferedIOBase, BufferedWriter, RawIOBase
+from sys import stderr
 from typing import Iterable
 from bs4 import BeautifulSoup, PageElement, Tag
 from requests import get, Response
@@ -125,6 +126,7 @@ def get_num_pages(link: str) -> int:
     """Get the number of pages."""
     res = get_page(0, link)
     soup = BeautifulSoup(res.text, features="html.parser")
+    print("Soup:", soup.prettify(), file=stderr)
     super_div = soup.find(class_="result-text")
     if super_div is None:
         raise ValueError("Could not find number of results.")

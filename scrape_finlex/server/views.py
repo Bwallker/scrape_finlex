@@ -1,4 +1,5 @@
 from io import BytesIO
+from sys import stderr
 from typing import Any
 from . import app
 from ..cli import Config, do_scrape
@@ -18,7 +19,7 @@ def scrape() -> Response | tuple[str, int]:
     url = request.form.get("url")
     if url is None:
         return "No URL provided.", 400
-    print("URL:", url)
+    print("URL:", url, file=stderr)
     output_file_name = request.form.get("output-file-name")
     if output_file_name is None or output_file_name == "":
         output_file_name = "output.csv"
