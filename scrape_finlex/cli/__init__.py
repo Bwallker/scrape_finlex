@@ -10,7 +10,9 @@ from typing import Iterable
 
 from bs4 import BeautifulSoup, PageElement, Tag
 from dotenv import load_dotenv
-from requests import Response, get
+from requests import Response
+from cloudscraper import create_scraper  # type: ignore
+
 
 def get_page(offset: int, link: str) -> Response:
     """Get a page from Finlex."""
@@ -23,8 +25,10 @@ def get_page(offset: int, link: str) -> Response:
         "Accept-Language": "en-US,en;q=0.9",
         "Accept": "text/html,application/xhtml+xml,application/xml;q=0.9,image/webp,image/apng,*/*;q=0.8,application/signed-exchange;v=b3;q=0.9",
     }
-
-    return get(target, headers=headers)
+    scraper = create_scraper(
+        browser={"browser": "chrome", "platform": "windows", "mobile": False}
+    )
+    return scraper.get(target, headers=headers)
 
 
 @dataclass
