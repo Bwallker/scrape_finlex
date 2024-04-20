@@ -21,7 +21,7 @@ def get_page(offset: int, link: str) -> Response:
     target = f"{link}&_offset={offset}"
 
     scraper = create_scraper(
-        browser={"browser": "firefox", "platform": "windows", "mobile": False}
+        browser={"browser": "chrome", "platform": "android", "desktop": False}
     )
     return scraper.get(target)
 
