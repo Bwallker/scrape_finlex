@@ -4,6 +4,7 @@ from . import app
 from ..cli import Config, do_scrape
 from flask import render_template, request, send_file, Response
 
+
 @app.route("/", methods=["GET"])
 def index():
     return render_template("index.html")
@@ -23,9 +24,4 @@ def scrape() -> Response | tuple[str, int]:
     output_file = BytesIO()
     config = Config(url, output_file, False)
     do_scrape(config)
-    response = send_file(
-        output_file, as_attachment=True, download_name=output_file_name
-    )
-    response.headers.set("Content-Type", "text/csv")
-    print("Returning response:", response)
-    return response
+    return send_file(output_file, as_attachment=True, download_name=output_file_name)

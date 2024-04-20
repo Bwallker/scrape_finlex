@@ -10,18 +10,22 @@ from typing import Iterable
 
 from bs4 import BeautifulSoup, PageElement, Tag
 from dotenv import load_dotenv
-from requests import Response
-from cloudscraper import create_scraper  # type: ignore
+from playwright.sync_api import sync_playwright
 
 
-def get_page(offset: int, link: str) -> Response:
+def get_page(offset: int, link: str) -> str:
     """Get a page from Finlex."""
     if offset < 0 or offset > 1090:
         raise ValueError("Offset must be between 0 and 1090.")
     target = f"{link}&_offset={offset}"
-
-    scraper = create_scraper()
-    return scraper.get(target)
+    with sync_playwright() as pw:
+        # create browser instance
+        browser = pw.chromium.launch(
+            headless=True,
+        )
+        page = browser.new_page()
+        page.goto(target)
+        return page.content()
 
 
 @dataclass
@@ -119,8 +123,8 @@ def pass_(offset: int, config: Config) -> list[DocumentEntry]:
     """Run a pass."""
     if config.print_to_console:
         print("Running pass number", offset)
-    res = get_page(offset, config.link)
-    soup = BeautifulSoup(res.text, features="html.parser")
+    content = get_page(offset, config.link)
+    soup = BeautifulSoup(content, features="html.parser")
     entries = list(parse_page(soup))
     if config.print_to_console:
         print("Finished running pass number", offset)
@@ -129,8 +133,8 @@ def pass_(offset: int, config: Config) -> list[DocumentEntry]:
 
 def get_num_pages(link: str) -> int:
     """Get the number of pages."""
-    res = get_page(0, link)
-    soup = BeautifulSoup(res.text, features="html.parser")
+    content = get_page(0, link)
+    soup = BeautifulSoup(content, features="html.parser")
     print("Soup:", soup.prettify(), file=stderr)
     super_div = soup.find(class_="result-text")
     if super_div is None:
