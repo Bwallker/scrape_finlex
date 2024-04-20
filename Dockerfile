@@ -16,7 +16,7 @@ ADD poetry.lock poetry.lock
 ADD README.md README.md
 ADD scrape_finlex scrape_finlex
 
-RUN --mount=type=cache,id=s/62e3d581-0944-47af-9ec9-bb14a9666c35,target=$POETRY_CACHE_DIR poetry install --without dev --no-root
+RUN --mount=type=cache,id=s/62e3d581-0944-47af-9ec9-bb14a9666c35/tmp,target=$POETRY_CACHE_DIR poetry install --without dev --no-root
 
 ENV VIRTUAL_ENV=/.venv \
     PATH="/.venv/bin:$PATH"
