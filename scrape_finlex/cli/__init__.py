@@ -4,7 +4,7 @@ from io import BufferedIOBase, BufferedWriter, RawIOBase
 from sys import stderr
 from typing import Iterable
 from bs4 import BeautifulSoup, PageElement, Tag
-from requests import get, Response
+from requests import get, Response, Session
 from dataclasses import dataclass
 from itertools import batched
 from multiprocessing import Pool
@@ -16,7 +16,11 @@ def get_page(offset: int, link: str) -> Response:
     """Get a page from Finlex."""
     if offset < 0 or offset > 1090:
         raise ValueError("Offset must be between 0 and 1090.")
-    return get(f"{link}&_offset={offset}")
+    headers = {
+        "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36 Edge/16.16299"
+    }
+    session = Session()
+    return session.get(f"{link}&_offset={offset}", headers=headers)
 
 
 @dataclass
@@ -126,7 +130,7 @@ def get_num_pages(link: str) -> int:
     """Get the number of pages."""
     res = get_page(0, link)
     soup = BeautifulSoup(res.text, features="html.parser")
-    print("Soup:", soup.prettify(), file=stderr)
+    #print("Soup:", soup.prettify(), file=stderr)
     super_div = soup.find(class_="result-text")
     if super_div is None:
         raise ValueError("Could not find number of results.")
